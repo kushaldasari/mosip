@@ -1,0 +1,22 @@
+# Java & Maven
+/target/
+*.class
+*.jar
+*.war
+*.log
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+
+# Logs
+logs/
+
+# Spring specific
+application.properties
