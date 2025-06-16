@@ -1,6 +1,7 @@
 // UserController.java
 package com.example.crud.controller;
 
+import com.example.crud.kafka.UserKafkaProducer;
 import com.example.crud.model.User;
 import com.example.crud.service.UserService;
 import io.vertx.core.Vertx;
@@ -14,16 +15,19 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
+    private final UserKafkaProducer userKafkaProducer;
     private final UserService userService;
     private final Vertx vertx;
 
+    // private final UserKafkaProducer userKafkaProducer;
+
     @Autowired
-    public UserController(UserService userService, Vertx vertx) {
+    public UserController(UserService userService, Vertx vertx, UserKafkaProducer userKafkaProducer) {
         this.userService = userService;
         this.vertx = vertx;
+        this.userKafkaProducer = userKafkaProducer;
     }
-
+    
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
@@ -74,6 +78,12 @@ public class UserController {
     
         return future;
     }
-    
+
+    @PostMapping("/kafka-create")
+public String createUserKafka(@RequestBody User user) {
+    userKafkaProducer.sendUser(user);
+    return "User sent to Kafka successfully!";
 }
 
+    
+}
