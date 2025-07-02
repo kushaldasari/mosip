@@ -55,7 +55,7 @@
             <version>${vertx.version}</version>
         </dependency>
 
-        <!-- Vert.x Codegen Utils (Optional for JsonObject mapping) -->
+        <!-- Vert.x Codegen Utils -->
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-codegen</artifactId>
@@ -63,23 +63,30 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JSON Mapper -->
+        <!-- Jackson Databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Test -->
+        <!-- Spring Kafka -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-		</dependency>
 
+        <!-- Vert.x Kafka Client -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-kafka-client</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
+        <!-- Jackson Core (optional for JSON serialization support with Vert.x Kafka) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -106,4 +113,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

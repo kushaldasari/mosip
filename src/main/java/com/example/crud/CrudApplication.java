@@ -2,6 +2,7 @@ package com.example.crud;
 
 import com.example.crud.service.UserService;
 import com.example.crud.vertx.UserVerticle;
+import com.example.crud.kafka.KafkaDeleteUserVerticle;
 import io.vertx.core.Vertx;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,8 +25,9 @@ public class CrudApplication {
     }
 
     @PostConstruct
-    public void deployVerticle() {
+    public void deployVerticles() {
         vertx.deployVerticle(new UserVerticle(userService));
+        vertx.deployVerticle(new KafkaDeleteUserVerticle(userService)); // Deploy Kafka consumer Verticle
     }
 
     @Bean
