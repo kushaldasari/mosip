@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -53,6 +54,16 @@ public class UserController {
     public String deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id) ? "Deleted" : "Not Found";
     }
+    @PostMapping("/trigger")
+    public String triggerEvent(@RequestParam String type) {
+    JsonObject payload = new JsonObject()
+        .put("id", UUID.randomUUID().toString())
+        .put("type", type)
+        .put("timestamp", System.currentTimeMillis());
+
+    vertx.eventBus().send("event.create", payload.encode()); // 💥 Sends to Verticle1
+    return "Event triggered with type: " + type;
+}
 
     // 🔹 Vert.x EventBus Async Get
     @GetMapping("/async/{id}")
