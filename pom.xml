@@ -87,6 +87,27 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+
+        <!-- Apache Camel Spring Boot Starter -->
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-spring-boot-starter</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+        <!-- Apache Camel Kafka Component -->
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-kafka-starter</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+        <!-- Apache Camel Direct Component -->
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-direct-starter</artifactId>
+            <version>4.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

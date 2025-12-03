@@ -1,7 +1,6 @@
 package com.example.crud.controller;
 
-import com.example.crud.kafka.KafkaDeleteProducer;
-import com.example.crud.kafka.UserKafkaProducer;
+import com.example.crud.kafka.UnifiedKafkaProducer;
 import com.example.crud.model.User;
 import com.example.crud.service.UserService;
 import io.vertx.core.Vertx;
@@ -15,17 +14,15 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserKafkaProducer userKafkaProducer;
+    private final UnifiedKafkaProducer unifiedKafkaProducer;
     private final UserService userService;
     private final Vertx vertx;
-    private final KafkaDeleteProducer kafkaDeleteProducer;
+
     @Autowired
-    public UserController(UserService userService, Vertx vertx, UserKafkaProducer userKafkaProducer,KafkaDeleteProducer kafkaDeleteProducer) {
+    public UserController(UserService userService, Vertx vertx, UnifiedKafkaProducer unifiedKafkaProducer) {
         this.userService = userService;
         this.vertx = vertx;
-        this.userKafkaProducer = userKafkaProducer;
-        this.kafkaDeleteProducer = kafkaDeleteProducer;
-  
+        this.unifiedKafkaProducer = unifiedKafkaProducer;
     }
 
     // 🔹 Basic CRUD operations
@@ -80,18 +77,36 @@ public class UserController {
         return future;
     }
 
-    // 🔹 Kafka - Create user
-    @PostMapping("/kafka-create")
-    public String createUserKafka(@RequestBody User user) {
-        userKafkaProducer.sendUser(user);
-        return "User sent to Kafka successfully!";
+    // 🔹 Unified Kafka Operations - Complete Flow: Client → Kafka → Camel → Verticles
+    
+    @PostMapping("/kafka/create")
+    public String createUserViaKafka(@RequestBody User user) {
+        unifiedKafkaProducer.sendCreateOperation(user);
+        return "CREATE operation sent to Kafka → Camel → Verticle 1 successfully!";
     }
 
-    // 🔹 Kafka - Delete user by ID
-    @PostMapping("/kafka-delete/{id}")
-    public String deleteUserKafka(@PathVariable Long id) {
-        kafkaDeleteProducer.sendDeleteUser(id);  // ✅ use instance, not class name
-        return "User delete request sent to Kafka successfully!";
+    @PutMapping("/kafka/update")
+    public String updateUserViaKafka(@RequestBody User user) {
+        unifiedKafkaProducer.sendUpdateOperation(user);
+        return "UPDATE operation sent to Kafka → Camel → Verticle 1 successfully!";
+    }
+
+    @GetMapping("/kafka/read/{id}")
+    public String readUserViaKafka(@PathVariable Long id) {
+        unifiedKafkaProducer.sendReadOperation(id);
+        return "READ operation sent to Kafka → Camel → Verticle 2 successfully!";
+    }
+
+    @DeleteMapping("/kafka/delete/{id}")
+    public String deleteUserViaKafka(@PathVariable Long id) {
+        unifiedKafkaProducer.sendDeleteOperation(id);
+        return "DELETE operation sent to Kafka → Camel → Verticle 2 successfully!";
+    }
+
+    @GetMapping("/kafka/all")
+    public String getAllUsersViaKafka() {
+        unifiedKafkaProducer.sendGetAllOperation();
+        return "GET_ALL operation sent to Kafka → Camel → Verticle 2 successfully!";
     }
     
 }

@@ -2,6 +2,8 @@ package com.example.crud;
 
 import com.example.crud.service.UserService;
 import com.example.crud.vertx.UserVerticle;
+import com.example.crud.vertx.CrudVerticle1;
+import com.example.crud.vertx.CrudVerticle2;
 import com.example.crud.kafka.KafkaDeleteUserVerticle;
 import io.vertx.core.Vertx;
 import org.springframework.boot.SpringApplication;
@@ -26,8 +28,19 @@ public class CrudApplication {
 
     @PostConstruct
     public void deployVerticles() {
+        // Deploy original verticles (for backward compatibility)
         vertx.deployVerticle(new UserVerticle(userService));
-        vertx.deployVerticle(new KafkaDeleteUserVerticle(userService)); // Deploy Kafka consumer Verticle
+        vertx.deployVerticle(new KafkaDeleteUserVerticle(userService));
+        
+        // Deploy new Camel-integrated verticles
+        vertx.deployVerticle(new CrudVerticle1(userService));
+        vertx.deployVerticle(new CrudVerticle2(userService));
+        
+        System.out.println("[Application] All Verticles deployed successfully!");
+        System.out.println("  - UserVerticle (original)");
+        System.out.println("  - KafkaDeleteUserVerticle (original)");
+        System.out.println("  - CrudVerticle1 (CREATE/UPDATE operations)");
+        System.out.println("  - CrudVerticle2 (READ/DELETE operations)");
     }
 
     @Bean
