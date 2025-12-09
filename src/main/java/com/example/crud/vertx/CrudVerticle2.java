@@ -3,10 +3,12 @@ package com.example.crud.vertx;
 import com.example.crud.model.User;
 import com.example.crud.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.Map;
 
 public class CrudVerticle2 extends AbstractVerticle {
 
@@ -20,7 +22,7 @@ public class CrudVerticle2 extends AbstractVerticle {
 
     @Override
     public void start() {
-        System.out.println("[Verticle 2] Started and listening for READ/DELETE operations on 'verticle2.operations' channel.");
+        System.out.println("[Verticle 2] Started and listening for ALL operations (Odd IDs + GET_ALL) on 'verticle2.operations' channel.");
         
         vertx.eventBus().consumer("verticle2.operations", message -> {
             JsonObject request = (JsonObject) message.body();
@@ -31,6 +33,12 @@ public class CrudVerticle2 extends AbstractVerticle {
             
             try {
                 switch (operation) {
+                    case "CREATE":
+                        handleCreateOperation(data);
+                        break;
+                    case "UPDATE":
+                        handleUpdateOperation(data);
+                        break;
                     case "READ":
                         handleReadOperation(data);
                         break;
@@ -48,6 +56,121 @@ public class CrudVerticle2 extends AbstractVerticle {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void handleCreateOperation(Object data) {
+        try {
+            System.out.println("[Verticle 2] Raw CREATE data received: " + data);
+            
+            User user = null;
+            
+            // Handle different data types with robust parsing
+            if (data instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dataMap = (Map<String, Object>) data;
+                
+                // Check if it's a nested structure with "map" field
+                if (dataMap.containsKey("map") && dataMap.get("map") instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> userMap = (Map<String, Object>) dataMap.get("map");
+                    user = objectMapper.convertValue(userMap, User.class);
+                } else {
+                    // Direct map conversion
+                    user = objectMapper.convertValue(dataMap, User.class);
+                }
+            } else if (data instanceof String) {
+                // Parse JSON string
+                user = objectMapper.readValue((String) data, User.class);
+            } else {
+                // Try to extract user data from complex object
+                String jsonData = objectMapper.writeValueAsString(data);
+                System.out.println("[Verticle 2] CREATE JSON representation: " + jsonData);
+                
+                com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(jsonData);
+                if (jsonNode.has("map")) {
+                    user = objectMapper.treeToValue(jsonNode.get("map"), User.class);
+                } else {
+                    user = objectMapper.treeToValue(jsonNode, User.class);
+                }
+            }
+            
+            if (user != null) {
+                // CRITICAL: Remove ID for CREATE operation to avoid Hibernate confusion
+                Long originalId = user.getId();
+                user.setId(null);
+                
+                System.out.println("[Verticle 2] Processing CREATE for user: " + user.getName() + 
+                                 " (original ID: " + originalId + " -> cleared for CREATE)");
+                
+                User savedUser = userService.createUser(user);
+                System.out.println("[Verticle 2] User created successfully with new ID: " + savedUser.getId());
+            } else {
+                System.err.println("[Verticle 2] Failed to parse CREATE user data");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("[Verticle 2] Error in CREATE operation: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void handleUpdateOperation(Object data) {
+        try {
+            System.out.println("[Verticle 2] Raw UPDATE data received: " + data);
+            
+            User user = null;
+            
+            // Handle different data types with robust parsing
+            if (data instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dataMap = (Map<String, Object>) data;
+                
+                // Check if it's a nested structure with "map" field
+                if (dataMap.containsKey("map") && dataMap.get("map") instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> userMap = (Map<String, Object>) dataMap.get("map");
+                    user = objectMapper.convertValue(userMap, User.class);
+                } else {
+                    // Direct map conversion
+                    user = objectMapper.convertValue(dataMap, User.class);
+                }
+            } else if (data instanceof String) {
+                // Parse JSON string
+                user = objectMapper.readValue((String) data, User.class);
+            } else {
+                // Try to extract user data from complex object
+                String jsonData = objectMapper.writeValueAsString(data);
+                System.out.println("[Verticle 2] UPDATE JSON representation: " + jsonData);
+                
+                com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(jsonData);
+                if (jsonNode.has("map")) {
+                    user = objectMapper.treeToValue(jsonNode.get("map"), User.class);
+                } else {
+                    user = objectMapper.treeToValue(jsonNode, User.class);
+                }
+            }
+            
+            if (user != null) {
+                System.out.println("[Verticle 2] Processing UPDATE for user ID: " + user.getId());
+                
+                if (user.getId() != null) {
+                    User updatedUser = userService.updateUser(user.getId(), user);
+                    if (updatedUser != null) {
+                        System.out.println("[Verticle 2] User updated successfully: " + updatedUser.getName());
+                    } else {
+                        System.err.println("[Verticle 2] User not found for update with ID: " + user.getId());
+                    }
+                } else {
+                    System.err.println("[Verticle 2] User ID is required for UPDATE operation");
+                }
+            } else {
+                System.err.println("[Verticle 2] Failed to parse UPDATE user data");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("[Verticle 2] Error in UPDATE operation: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void handleReadOperation(Object data) {

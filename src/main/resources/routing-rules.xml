@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routing-configuration>
+    <description>CRUD Operations Routing Rules for Verticles</description>
+    
+    <!-- Default routing rules -->
+    <default-rules>
+        <rule operation="CREATE" destination="verticle1" reason="CREATE operations always go to Verticle 1"/>
+        <rule operation="GET_ALL" destination="verticle2" reason="GET_ALL operations always go to Verticle 2"/>
+    </default-rules>
+    
+    <!-- ID-based routing rules -->
+    <id-based-rules>
+        <rule condition="even" destination="verticle1" reason="Even IDs go to Verticle 1"/>
+        <rule condition="odd" destination="verticle2" reason="Odd IDs go to Verticle 2"/>
+        <rule condition="null" destination="verticle1" reason="Default to Verticle 1 when no ID"/>
+    </id-based-rules>
+    
+    <!-- Operation-specific overrides -->
+    <operation-overrides>
+        <override operation="UPDATE" id-range="1-100" destination="verticle1"/>
+        <override operation="DELETE" id-range="101-200" destination="verticle2"/>
+    </operation-overrides>
+    
+    <!-- Load balancing configuration -->
+    <load-balancing>
+        <verticle name="verticle1" max-concurrent="50" priority="high"/>
+        <verticle name="verticle2" max-concurrent="30" priority="medium"/>
+    </load-balancing>
+    
+    <!-- Failover configuration -->
+    <failover>
+        <rule primary="verticle1" fallback="verticle2" condition="verticle1-unavailable"/>
+        <rule primary="verticle2" fallback="verticle1" condition="verticle2-unavailable"/>
+    </failover>
+</routing-configuration>

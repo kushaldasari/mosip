@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<verticle-configuration name="verticle1">
+    <description>Configuration for Verticle 1 - Handles Even IDs and CREATE operations</description>
+    
+    <!-- Supported operations -->
+    <supported-operations>
+        <operation name="CREATE" enabled="true" priority="high"/>
+        <operation name="UPDATE" enabled="true" priority="medium"/>
+        <operation name="READ" enabled="true" priority="low"/>
+        <operation name="DELETE" enabled="true" priority="medium"/>
+        <operation name="GET_ALL" enabled="false" priority="none"/>
+    </supported-operations>
+    
+    <!-- ID routing rules -->
+    <id-routing>
+        <rule type="modulo" value="2" result="0" description="Even IDs (ID % 2 == 0)"/>
+        <rule type="range" min="1" max="1000" description="IDs between 1-1000"/>
+    </id-routing>
+    
+    <!-- Performance settings -->
+    <performance>
+        <max-concurrent-operations>50</max-concurrent-operations>
+        <timeout-seconds>30</timeout-seconds>
+        <retry-attempts>3</retry-attempts>
+    </performance>
+    
+    <!-- Error handling -->
+    <error-handling>
+        <retry-on-failure>true</retry-on-failure>
+        <dead-letter-queue>verticle1-dlq</dead-letter-queue>
+        <fallback-verticle>verticle2</fallback-verticle>
+    </error-handling>
+</verticle-configuration>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<verticle-configuration name="verticle2">
+    <description>Configuration for Verticle 2 - Handles Odd IDs and GET_ALL operations</description>
+    
+    <!-- Supported operations -->
+    <supported-operations>
+        <operation name="CREATE" enabled="false" priority="none"/>
+        <operation name="UPDATE" enabled="true" priority="medium"/>
+        <operation name="READ" enabled="true" priority="high"/>
+        <operation name="DELETE" enabled="true" priority="medium"/>
+        <operation name="GET_ALL" enabled="true" priority="high"/>
+    </supported-operations>
+    
+    <!-- ID routing rules -->
+    <id-routing>
+        <rule type="modulo" value="2" result="1" description="Odd IDs (ID % 2 == 1)"/>
+        <rule type="range" min="1001" max="2000" description="IDs between 1001-2000"/>
+    </id-routing>
+    
+    <!-- Performance settings -->
+    <performance>
+        <max-concurrent-operations>30</max-concurrent-operations>
+        <timeout-seconds>45</timeout-seconds>
+        <retry-attempts>2</retry-attempts>
+    </performance>
+    
+    <!-- Error handling -->
+    <error-handling>
+        <retry-on-failure>true</retry-on-failure>
+        <dead-letter-queue>verticle2-dlq</dead-letter-queue>
+        <fallback-verticle>verticle1</fallback-verticle>
+    </error-handling>
+</verticle-configuration>
